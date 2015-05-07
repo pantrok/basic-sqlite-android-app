@@ -11,8 +11,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.teamtreehouse.friendlyforecast.R;
+import com.teamtreehouse.friendlyforecast.db.ForecastDataSource;
 import com.teamtreehouse.friendlyforecast.services.Forecast;
 import com.teamtreehouse.friendlyforecast.services.ForecastService;
+
+import java.sql.SQLException;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -22,6 +25,8 @@ import retrofit.client.Response;
 public class MainActivity extends Activity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+
+    protected ForecastDataSource mDataSource;
 
     protected Button mInsertButton;
     protected Button mSelectButton;
@@ -42,7 +47,8 @@ public class MainActivity extends Activity {
 
         getActionBar().hide();
 
-        // TODO: Instantiate mDataSource
+        mDataSource = new ForecastDataSource(this);
+
 
         mHighTextView = (TextView)findViewById(R.id.textView2);
         mLowTextView = (TextView)findViewById(R.id.textView3);
@@ -67,7 +73,7 @@ public class MainActivity extends Activity {
         mUpdateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Update
+                mDataSource.updateTemperature(100);
             }
         });
 
@@ -75,7 +81,7 @@ public class MainActivity extends Activity {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Delete
+                mDataSource.deleteAll();
             }
         });
 
@@ -92,13 +98,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // TODO: Open db
+        try {
+            mDataSource.open();
+        } catch (SQLException e) {
+
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // TODO: Close db
+        mDataSource.close();
     }
 
     protected void loadForecastData() {
@@ -115,9 +125,9 @@ public class MainActivity extends Activity {
                 Log.v(TAG, "Temp " + i + ": " + mTemperatures[i]);
             }
 
-            // TODO: Insert
-            //updateHighAndLow();
-            //enableOtherButtons();
+            mDataSource.insertForecast(forecast);
+            updateHighAndLow();
+            enableOtherButtons();
         }
 
         @Override

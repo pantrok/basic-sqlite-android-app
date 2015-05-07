@@ -10,14 +10,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.teamtreehouse.friendlyforecast.R;
+import com.teamtreehouse.friendlyforecast.db.ForecastDataSource;
+import com.teamtreehouse.friendlyforecast.db.ForecastHelper;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 
 public class ViewForecastActivity extends ListActivity {
 
-    // TODO: Declare mDataSource
+    protected ForecastDataSource mDataSource;
     protected ArrayList<BigDecimal> mTemperatures;
 
     @Override
@@ -27,29 +31,39 @@ public class ViewForecastActivity extends ListActivity {
 
         configureActionBar();
 
-        // TODO: Instantiate mDataSource
+        mDataSource = new ForecastDataSource(this);
         mTemperatures = new ArrayList<BigDecimal>();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // TODO: Open db
+        try {
+            mDataSource.open();
+        } catch (SQLException e) {
 
-        // TODO: Select all
-        //updateList(cursor);
+        }
+
+        Cursor cursor = mDataSource.selectAllTemperatures();
+        updateList(cursor);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // TODO: Close db
+        mDataSource.close();
     }
 
     protected void updateList(Cursor cursor) {
         mTemperatures.clear();
 
-        // TODO: Loop through cursor to populate mTemperatures
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            int i = cursor.getColumnIndex(ForecastHelper.COLUMN_TEMPERATURE);
+            double temperature = cursor.getDouble(i);
+            mTemperatures.add(new BigDecimal(temperature, MathContext.DECIMAL32));
+            cursor.moveToNext();
+        }
 
         ArrayAdapter<BigDecimal> adapter = new ArrayAdapter<BigDecimal>(ViewForecastActivity.this,
                 android.R.layout.simple_list_item_1,
@@ -59,8 +73,8 @@ public class ViewForecastActivity extends ListActivity {
     }
 
     protected void filterTemperatures(String minTemp) {
-        // TODO: Select greater than
-        //updateList(cursor);
+        Cursor cursor = mDataSource.selectTempsGreaterThan(minTemp);
+        updateList(cursor);
     }
 
     protected void configureActionBar() {

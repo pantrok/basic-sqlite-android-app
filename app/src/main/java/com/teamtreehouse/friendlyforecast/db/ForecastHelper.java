@@ -11,12 +11,13 @@ import android.provider.BaseColumns;
 public class ForecastHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_TEMPERATURES = "TEMPERATURES";
+    public static final String COLUMN_TEMPERATURE = "TEMPERATURE";
 
     private static final String DB_NAME = "temperatures.db";
     private static final int DB_VERSION = 1;
     private static final String DB_CREATE = "CREATE TABLE "+ TABLE_TEMPERATURES +" ("+
             BaseColumns._ID+" INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "TEMPERATURE REAL)";
+            COLUMN_TEMPERATURE + " REAL)";
 
     public ForecastHelper(Context context){
         super(context, DB_NAME, null, DB_VERSION);
